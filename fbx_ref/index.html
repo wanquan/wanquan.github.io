@@ -1,102 +1,156 @@
 <html>
-	<style>
+    <style type="text/css" media="screen">
         body {font-family: Arial;}
 
         td, th {
-        	white-space:nowrap;
-        	text-align: center;
+            white-space:nowrap;
+            text-align: center;
+            padding: 10px;
         }
-	</style>
-	<head>
-		<meta charset="utf-8">
-		<title>FBX</title>
-		<script src="https://cdn.plot.ly/plotly-2.2.0.min.js"></script>
-		<script>
-		String.prototype.format = function() {
-		    var i=0, args=arguments;
-		    return this.replace(/{}/g, function() {
-		        return typeof args[i] != 'undefined' ? args[i++] : '';
-		    });
-		};
+        table {
+          border: 1px solid black;
+          float: left;
+          width: 400px;
+          margin-left: 5px;
+          border-collapse: collapse;
+          border-spacing: 0;
+        }
 
-		function sort_by_key(array, key)
-		{
-		     return array.sort(function(a, b)
-		     {
-		          var x = a[key]; var y = b[key];
-		          return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-		     });
-		}
+        tr:nth-child(even) {
+          background-color: #f2f2f2;
+        }
 
-		function Get(sourceUrl){
-		    var Httpreq = new XMLHttpRequest();
-		    Httpreq.open("GET", sourceUrl, false);
-		    Httpreq.send(null);
-		    return Httpreq.responseText;
-		}
+        #table_container {
+          width: 810px;
+          margin: 0 auto;
+        }
+    </style>
+    <head>
+        <meta charset="utf-8">
+        <title>FBX</title>
+        <script src="https://cdn.plot.ly/plotly-2.2.0.min.js"></script>
+        <script>
+        String.prototype.format = function() {
+            var i=0, args=arguments;
+            return this.replace(/{}/g, function() {
+                return typeof args[i] != 'undefined' ? args[i++] : '';
+            });
+        };
 
-		function onload()
-		{
-		    jsonStr = Get("https://wanquan.github.io/fbx_ref/fbxDaily.json");
-		    var fbxData = JSON.parse(jsonStr);
-		    fbxData = fbxData['indexPoints'];
-		    fbxData = sort_by_key(fbxData, 'indexDate');
-		    xData = [];
-		    yData = [];
-		    for (var i = 0;i<fbxData.length; i++)
-		    {
-		        xData[i] = fbxData[i].indexDate;
-		        yData[i] = fbxData[i].value;
-		    }
-		    drawChart(xData, yData);
-		    drawTable(xData, yData);
-		}
+        function sort_by_key(array, key)
+        {
+             return array.sort(function(a, b)
+             {
+                  var x = a[key]; var y = b[key];
+                  return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+             });
+        }
 
-		function drawTable(xData, yData)
-		{
-		    var result = '<table style="width: 300px; margin:0 auto; border:1px solid; padding:5px;" rules="all" cellpadding="5";>';
-		    result += "<tr><th>Date</th><th>Index</th></tr>";
-		    for(var i= xData.length-1; i>=0; i--)
-		    {
-		        result += "<tr><td>{}</td><td>{}</td></tr>".format(xData[i], yData[i]);
-		    }
-		    result += "</table>";
-		    document.getElementById("fbxTable").innerHTML = result;
-		}
+        function Get(sourceUrl){
+            var Httpreq = new XMLHttpRequest();
+            Httpreq.open("GET", sourceUrl, false);
+            Httpreq.send(null);
+            return Httpreq.responseText;
+        }
 
-		function drawChart(xData, yData)
-		{
-		    var layout = {
-		        title: "FBX Daily Index ( {}: {} )".format(xData[xData.length-1], yData[yData.length-1]),
-		        xaxis: {
-		            autorange: true,
-		            rangeslider: true,
-		            type: 'date'
-		        },
-		        yaxis: {
-		            autorange: true,
-		            type: "linear"
-		        },
-		        width: 1000,
-		        height: 500,
-		    };
-		    var data = [{
-		        x: xData,
-		        y: yData,
-		        type: 'scatter',
-		    }];
+        function onload()
+        {
+            jsonStr = Get("https://wanquan.github.io/fbx_ref/fbxDaily.json");
+            var fbxData = JSON.parse(jsonStr);
+            fbxData = fbxData['indexPoints'];
+            fbxData = sort_by_key(fbxData, 'indexDate');
+            xData = [];
+            yData = [];
+            for (var i = 0;i<fbxData.length; i++)
+            {
+                xData[i] = fbxData[i].indexDate;
+                yData[i] = fbxData[i].value;
+            }
+            drawChart("fbxChartDaily", xData, yData, "Daily");
+            drawTable("fbxTableDaily", xData, yData, "Daily");
 
-		    Plotly.newPlot('fbxChart', data, layout)
-		}
+            jsonStr = Get("https://wanquan.github.io/fbx_ref/fbxWeekly.json");
+            var fbxData = JSON.parse(jsonStr);
+            fbxData = fbxData['indexPoints'];
+            fbxData = sort_by_key(fbxData, 'indexDate');
+            xData = [];
+            yData = [];
+            for (var i = 0;i<fbxData.length; i++)
+            {
+                xData[i] = fbxData[i].indexDate;
+                yData[i] = fbxData[i].value.toFixed(2);
+            }
 
-		</script>
+            drawChart("fbxChartWeekly", xData, yData, "Weekly");
+            drawTable("fbxTableWeekly", xData, yData, "Weekly");
+        }
 
-	</head>
-	<body id="abc" onload=onload()>
-		<div style="  text-align: center; width:1100px; margin: 0 auto;">
-			CREDIT TO: <a href="https://fbx.freightos.com/">FBX</a><br>
-		</div>
-		<div id='fbxChart' style="width:1100px; margin: 0 auto;"></div>
-		<div id='fbxTable' style="width:1100px; margin: 0 auto;"></div>
-	</body>
+        function drawTable(divId, xData, yData, type)
+        {
+            var result = '<table><caption style="text-align:center"><h4>FBX {} Index</h4></caption>'.format(type);
+            result += "<tr><th>Date</th><th>Index</th><th>Change (%)</th></tr>";
+            for(var i= xData.length-1; i>=0; i--)
+            {
+                delta = "";
+                if(i>=1)
+                {
+                    aIndex = parseInt(yData[i]);
+                    bIndex = parseInt(yData[i-1]);
+                    console.log(aIndex);
+                    percentage = ((aIndex/bIndex-1)*100).toFixed(2);
+                    if(percentage >= 0 )
+                    {
+                        delta = '<p style="color:green">+{}%</p>'.format(percentage)
+                    }
+                    else
+                    {
+                        delta = '<p style="color:red">{}%</p>'.format(percentage)
+                    }
+
+                }
+                result += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(xData[i], yData[i], delta);
+            }
+            result += "</table>";
+            document.getElementById(divId).innerHTML = result;
+        }
+
+        function drawChart(divId, xData, yData, type)
+        {
+            var layout = {
+                title: "FBX {} Index ( {}: {} )".format(type, xData[xData.length-1], yData[yData.length-1]),
+                xaxis: {
+                    autorange: true,
+                    rangeslider: true,
+                    type: 'date'
+                },
+                yaxis: {
+                    autorange: true,
+                    type: "linear"
+                },
+
+                height: 500,
+            };
+            var data = [{
+                x: xData,
+                y: yData,
+                type: 'scatter',
+            }];
+
+            Plotly.newPlot(divId, data, layout)
+        }
+
+        </script>
+
+    </head>
+    <body id="abc" onload=onload()>
+        <div style="text-align: center; width:80%; margin: 0 auto;">
+            DATA SOURCE & CREDIT TO: <a href="https://fbx.freightos.com/">FBX</a><br>
+        </div>
+        <div id='fbxChartDaily' style="width:80%; margin: 0 auto;"></div>
+        <div id='fbxChartWeekly' style="width:80%; margin: 0 auto;"></div>
+        <div id="table_container">
+            <table id='fbxTableDaily'></table>
+            <table id='fbxTableWeekly'></table>
+        </div>
+    </body>
 </html>
